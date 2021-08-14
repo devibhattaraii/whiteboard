@@ -286,10 +286,7 @@ const ExcalidrawWrapper = () => {
             fontSize: "0.7em",
             textAlign: "center",
           }}
-        >
-          {/* <GitHubCorner theme={appState.theme} dir={document.dir} /> */}
-          {/* FIXME remove after 2021-05-20 */}
-        </div>
+        ></div>
       );
     },
     [],

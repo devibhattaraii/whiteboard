@@ -109,5 +109,3 @@ export const findShapeByKey = (key: string) => {
   });
   return shape?.value || null;
 };
-
-// TODO: Bikash- SVG work with icons

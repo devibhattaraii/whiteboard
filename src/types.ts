@@ -19,7 +19,6 @@ import { ImportedDataState } from "./data/types";
 import type App from "./components/App";
 import type { ResolvablePromise } from "./utils";
 import { Spreadsheet } from "./charts";
-import { Language } from "./i18n";
 import { ClipboardData } from "./clipboard";
 import { isOverScrollBars } from "./scene";
 import { MaybeTransformHandleType } from "./element/transformHandles";
@@ -186,7 +185,6 @@ export interface ExcalidrawProps {
   ) => Promise<boolean> | boolean;
   renderTopRightUI?: (isMobile: boolean, appState: AppState) => JSX.Element;
   renderFooter?: (isMobile: boolean, appState: AppState) => JSX.Element;
-  langCode?: Language["code"];
   viewModeEnabled?: boolean;
   zenModeEnabled?: boolean;
   gridModeEnabled?: boolean;

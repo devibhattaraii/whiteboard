@@ -36,27 +36,21 @@ export const LibraryUnit = ({
     if (!elementsToRender) {
       return;
     }
-    let svg: SVGSVGElement;
+    const svg = exportToSvg(elementsToRender, {
+      exportBackground: false,
+      viewBackgroundColor: oc.white,
+    });
+    for (const child of ref.current!.children) {
+      if (child.tagName !== "svg") {
+        continue;
+      }
+      ref.current!.removeChild(child);
+    }
+    ref.current!.appendChild(svg);
+
     const current = ref.current!;
-
-    (async () => {
-      svg = await exportToSvg(elementsToRender, {
-        exportBackground: false,
-        viewBackgroundColor: oc.white,
-      });
-      for (const child of ref.current!.children) {
-        if (child.tagName !== "svg") {
-          continue;
-        }
-        current!.removeChild(child);
-      }
-      current!.appendChild(svg);
-    })();
-
     return () => {
-      if (svg) {
-        current.removeChild(svg);
-      }
+      current.removeChild(svg);
     };
   }, [elements, pendingElements]);
 

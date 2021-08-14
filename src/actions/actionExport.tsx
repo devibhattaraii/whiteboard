@@ -7,7 +7,6 @@ import "../components/ToolIcon.scss";
 import { Tooltip } from "../components/Tooltip";
 import { DarkModeToggle, Appearence } from "../components/DarkModeToggle";
 import { loadFromJSON, saveAsJSON } from "../data";
-import { resaveAsImageWithScene } from "../data/resave";
 import { t } from "../i18n";
 import { useIsMobile } from "../components/App";
 import { KEYS } from "../keys";
@@ -19,7 +18,6 @@ import { DEFAULT_EXPORT_PADDING, EXPORT_SCALES } from "../constants";
 import { getSelectedElements, isSomeElementSelected } from "../scene";
 import { getNonDeletedElements } from "../element";
 import { ActiveFile } from "../components/ActiveFile";
-import { isImageFileHandle } from "../data/blob";
 
 export const actionChangeProjectName = register({
   name: "changeProjectName",
@@ -70,7 +68,7 @@ export const actionChangeExportScale = register({
           return (
             <ToolButton
               key={s}
-              size="small"
+              size="s"
               type="radio"
               icon={`${s}x`}
               name="export-canvas-scale"
@@ -120,7 +118,7 @@ export const actionChangeExportEmbedScene = register({
     >
       {t("labels.exportEmbedScene")}
       <Tooltip label={t("labels.exportEmbedScene_details")} long={true}>
-        <div className="excalidraw-tooltip-icon">{questionCircle}</div>
+        <div className="Tooltip-icon">{questionCircle}</div>
       </Tooltip>
     </CheckboxItem>
   ),
@@ -130,12 +128,8 @@ export const actionSaveToActiveFile = register({
   name: "saveToActiveFile",
   perform: async (elements, appState, value) => {
     const fileHandleExists = !!appState.fileHandle;
-
     try {
-      const { fileHandle } = isImageFileHandle(appState.fileHandle)
-        ? await resaveAsImageWithScene(elements, appState)
-        : await saveAsJSON(elements, appState);
-
+      const { fileHandle } = await saveAsJSON(elements, appState);
       return {
         commitToHistory: false,
         appState: {
@@ -207,7 +201,7 @@ export const actionLoadScene = register({
       const {
         elements: loadedElements,
         appState: loadedAppState,
-      } = await loadFromJSON(appState, elements);
+      } = await loadFromJSON(appState);
       return {
         elements: loadedElements,
         appState: loadedAppState,

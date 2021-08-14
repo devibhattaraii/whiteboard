@@ -198,11 +198,6 @@ export const actionChangeFillStyle = register({
       <ButtonIconSelect
         options={[
           {
-            value: "hachure",
-            text: t("labels.hachure"),
-            icon: <FillHachureIcon theme={appState.theme} />,
-          },
-          {
             value: "cross-hatch",
             text: t("labels.crossHatch"),
             icon: <FillCrossHatchIcon theme={appState.theme} />,
@@ -253,11 +248,6 @@ export const actionChangeStrokeWidth = register({
             icon: <StrokeWidthIcon theme={appState.theme} strokeWidth={2} />,
           },
           {
-            value: 2,
-            text: t("labels.bold"),
-            icon: <StrokeWidthIcon theme={appState.theme} strokeWidth={6} />,
-          },
-          {
             value: 4,
             text: t("labels.extraBold"),
             icon: <StrokeWidthIcon theme={appState.theme} strokeWidth={10} />,
@@ -299,16 +289,6 @@ export const actionChangeSloppiness = register({
             value: 0,
             text: t("labels.architect"),
             icon: <SloppinessArchitectIcon theme={appState.theme} />,
-          },
-          {
-            value: 1,
-            text: t("labels.artist"),
-            icon: <SloppinessArtistIcon theme={appState.theme} />,
-          },
-          {
-            value: 2,
-            text: t("labels.cartoonist"),
-            icon: <SloppinessCartoonistIcon theme={appState.theme} />,
           },
         ]}
         value={getFormValue(
@@ -352,11 +332,6 @@ export const actionChangeStrokeStyle = register({
             text: t("labels.strokeStyle_dashed"),
             icon: <StrokeStyleDashedIcon theme={appState.theme} />,
           },
-          {
-            value: "dotted",
-            text: t("labels.strokeStyle_dotted"),
-            icon: <StrokeStyleDottedIcon theme={appState.theme} />,
-          },
         ]}
         value={getFormValue(
           elements,
@@ -384,38 +359,7 @@ export const actionChangeOpacity = register({
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => (
-    <label className="control-label">
-      {t("labels.opacity")}
-      <input
-        type="range"
-        min="0"
-        max="100"
-        step="10"
-        onChange={(event) => updateData(+event.target.value)}
-        onWheel={(event) => {
-          event.stopPropagation();
-          const target = event.target as HTMLInputElement;
-          const STEP = 10;
-          const MAX = 100;
-          const MIN = 0;
-          const value = +target.value;
-
-          if (event.deltaY < 0 && value < MAX) {
-            updateData(value + STEP);
-          } else if (event.deltaY > 0 && value > MIN) {
-            updateData(value - STEP);
-          }
-        }}
-        value={
-          getFormValue(
-            elements,
-            appState,
-            (element) => element.opacity,
-            appState.currentItemOpacity,
-          ) ?? undefined
-        }
-      />
-    </label>
+    <label className="control-label"></label>
   ),
 });
 
@@ -447,11 +391,6 @@ export const actionChangeFontSize = register({
       <ButtonIconSelect
         group="font-size"
         options={[
-          {
-            value: 16,
-            text: t("labels.small"),
-            icon: <FontSizeSmallIcon theme={appState.theme} />,
-          },
           {
             value: 20,
             text: t("labels.medium"),
@@ -581,11 +520,6 @@ export const actionChangeTextAlign = register({
             value: "center",
             text: t("labels.center"),
             icon: <TextAlignCenterIcon theme={appState.theme} />,
-          },
-          {
-            value: "right",
-            text: t("labels.right"),
-            icon: <TextAlignRightIcon theme={appState.theme} />,
           },
         ]}
         value={getFormValue(

@@ -12,7 +12,7 @@ import { exportCanvas } from "../data";
 import { importLibraryFromJSON, saveLibraryAsJSON } from "../data/json";
 import { isTextElement, showSelectedShapeActions } from "../element";
 import { NonDeletedExcalidrawElement } from "../element/types";
-import { Language, t } from "../i18n";
+import { t } from "../i18n";
 import { useIsMobile } from "../components/App";
 import { calculateScrollCenter, getSelectedElements } from "../scene";
 import { ExportType } from "../scene/types";
@@ -47,8 +47,6 @@ import { Tooltip } from "./Tooltip";
 import { UserList } from "./UserList";
 import Library from "../data/library";
 import { JSONExportDialog } from "./JSONExportDialog";
-import { LibraryButton } from "./LibraryButton";
-import { isImageFileHandle } from "../data/blob";
 
 interface LayerUIProps {
   actionManager: ActionManager;
@@ -63,7 +61,6 @@ interface LayerUIProps {
   showExitZenModeBtn: boolean;
   showThemeBtn: boolean;
   toggleZenMode: () => void;
-  langCode: Language["code"];
   isCollaborating: boolean;
   renderTopRightUI?: (isMobile: boolean, appState: AppState) => JSX.Element;
   renderCustomFooter?: (isMobile: boolean, appState: AppState) => JSX.Element;
@@ -408,7 +405,7 @@ const LayerUI = ({
     const createExporter = (type: ExportType): ExportCB => async (
       exportedElements,
     ) => {
-      const fileHandle = await exportCanvas(type, exportedElements, appState, {
+      await exportCanvas(type, exportedElements, appState, {
         exportBackground: appState.exportBackground,
         name: appState.name,
         viewBackgroundColor: appState.viewBackgroundColor,
@@ -418,14 +415,6 @@ const LayerUI = ({
           console.error(error);
           setAppState({ errorMessage: error.message });
         });
-
-      if (
-        appState.exportEmbedScene &&
-        fileHandle &&
-        isImageFileHandle(fileHandle)
-      ) {
-        setAppState({ fileHandle });
-      }
     };
 
     return (
@@ -477,7 +466,12 @@ const LayerUI = ({
       <Island padding={2} style={{ zIndex: 1 }}>
         <Stack.Col gap={4}>
           <Stack.Row gap={1} justifyContent="space-between">
-            {actionManager.renderAction("clearCanvas")}
+            <BackgroundPickerAndDarkModeToggle
+              actionManager={actionManager}
+              appState={appState}
+              setAppState={setAppState}
+              showThemeBtn={showThemeBtn}
+            />
             <Separator />
             {actionManager.renderAction("loadScene")}
             {renderJSONExportDialog()}
@@ -490,13 +484,9 @@ const LayerUI = ({
                 onClick={onCollabButtonClick}
               />
             )}
+            {actionManager.renderAction("clearCanvas")}
           </Stack.Row>
-          <BackgroundPickerAndDarkModeToggle
-            actionManager={actionManager}
-            appState={appState}
-            setAppState={setAppState}
-            showThemeBtn={showThemeBtn}
-          />
+
           {appState.fileHandle && (
             <>{actionManager.renderAction("saveToActiveFile")}</>
           )}
@@ -604,10 +594,6 @@ const LayerUI = ({
                         />
                       </Stack.Row>
                     </Island>
-                    <LibraryButton
-                      appState={appState}
-                      setAppState={setAppState}
-                    />
                   </Stack.Row>
                   {libraryMenu}
                 </Stack.Col>
@@ -632,9 +618,7 @@ const LayerUI = ({
                       label={client.username || "Unknown user"}
                       key={clientId}
                     >
-                      {actionManager.renderAction("goToCollaborator", {
-                        id: clientId,
-                      })}
+                      {actionManager.renderAction("goToCollaborator", clientId)}
                     </Tooltip>
                   ))}
             </UserList>
@@ -667,16 +651,6 @@ const LayerUI = ({
                   zoom={appState.zoom}
                 />
               </Island>
-              {!viewModeEnabled && (
-                <div
-                  className={clsx("undo-redo-buttons zen-mode-transition", {
-                    "layer-ui__wrapper__footer-left--transition-bottom": zenModeEnabled,
-                  })}
-                >
-                  {actionManager.renderAction("undo", { size: "small" })}
-                  {actionManager.renderAction("redo", { size: "small" })}
-                </div>
-              )}
             </Section>
           </Stack.Col>
         </div>
@@ -806,7 +780,6 @@ const areEqual = (prev: LayerUIProps, next: LayerUIProps) => {
   const keys = Object.keys(prevAppState) as (keyof Partial<AppState>)[];
   return (
     prev.renderCustomFooter === next.renderCustomFooter &&
-    prev.langCode === next.langCode &&
     prev.elements === next.elements &&
     keys.every((key) => prevAppState[key] === nextAppState[key])
   );

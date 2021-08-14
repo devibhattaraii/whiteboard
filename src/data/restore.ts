@@ -5,11 +5,7 @@ import {
 } from "../element/types";
 import { AppState, NormalizedZoomValue } from "../types";
 import { ImportedDataState } from "./types";
-import {
-  getElementMap,
-  getNormalizedDimensions,
-  isInvisiblySmallElement,
-} from "../element";
+import { getNormalizedDimensions, isInvisiblySmallElement } from "../element";
 import { isLinearElementType } from "../element/typeChecks";
 import { randomId } from "../random";
 import {
@@ -20,7 +16,6 @@ import {
 } from "../constants";
 import { getDefaultAppState } from "../appState";
 import { LinearElementEditor } from "../element/linearElementEditor";
-import { bumpVersion } from "../element/mutateElement";
 
 type RestoredAppState = Omit<
   AppState,
@@ -186,20 +181,13 @@ const restoreElement = (
 
 export const restoreElements = (
   elements: ImportedDataState["elements"],
-  /** NOTE doesn't serve for reconciliation */
-  localElements: readonly ExcalidrawElement[] | null | undefined,
 ): ExcalidrawElement[] => {
-  const localElementsMap = localElements ? getElementMap(localElements) : null;
   return (elements || []).reduce((elements, element) => {
     // filtering out selection, which is legacy, no longer kept in elements,
     // and causing issues if retained
     if (element.type !== "selection" && !isInvisiblySmallElement(element)) {
-      let migratedElement: ExcalidrawElement = restoreElement(element);
+      const migratedElement = restoreElement(element);
       if (migratedElement) {
-        const localElement = localElementsMap?.[element.id];
-        if (localElement && localElement.version > migratedElement.version) {
-          migratedElement = bumpVersion(migratedElement, localElement.version);
-        }
         elements.push(migratedElement);
       }
     }
@@ -209,25 +197,25 @@ export const restoreElements = (
 
 export const restoreAppState = (
   appState: ImportedDataState["appState"],
-  localAppState: Partial<AppState> | null | undefined,
+  localAppState: Partial<AppState> | null,
 ): RestoredAppState => {
   appState = appState || {};
 
   const defaultAppState = getDefaultAppState();
   const nextAppState = {} as typeof defaultAppState;
 
-  for (const [key, defaultValue] of Object.entries(defaultAppState) as [
+  for (const [key, val] of Object.entries(defaultAppState) as [
     keyof typeof defaultAppState,
     any,
   ][]) {
-    const suppliedValue = appState[key];
+    const restoredValue = appState[key];
     const localValue = localAppState ? localAppState[key] : undefined;
     (nextAppState as any)[key] =
-      suppliedValue !== undefined
-        ? suppliedValue
+      restoredValue !== undefined
+        ? restoredValue
         : localValue !== undefined
         ? localValue
-        : defaultValue;
+        : val;
   }
 
   return {
@@ -255,10 +243,9 @@ export const restore = (
    * Supply `null` if you can't get access to it.
    */
   localAppState: Partial<AppState> | null | undefined,
-  localElements: readonly ExcalidrawElement[] | null | undefined,
 ): RestoredDataState => {
   return {
-    elements: restoreElements(data?.elements, localElements),
+    elements: restoreElements(data?.elements),
     appState: restoreAppState(data?.appState, localAppState || null),
   };
 };

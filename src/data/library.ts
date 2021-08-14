@@ -18,7 +18,7 @@ class Library {
   };
 
   restoreLibraryItem = (libraryItem: LibraryItem): LibraryItem | null => {
-    const elements = getNonDeletedElements(restoreElements(libraryItem, null));
+    const elements = getNonDeletedElements(restoreElements(libraryItem));
     return elements.length ? elements : null;
   };
 

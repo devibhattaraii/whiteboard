@@ -2,6 +2,9 @@ import React from "react";
 import { KEYS } from "./keys";
 
 // We inline font-awesome icons in order to save on js size rather than including the font awesome react library
+
+// BIKASH --------------------- Replace icons with SVG
+
 export const SHAPES = [
   {
     icon: (
@@ -11,7 +14,7 @@ export const SHAPES = [
       </svg>
     ),
     value: "selection",
-    key: KEYS.V,
+    key: [KEYS.V, KEYS.S],
   },
   {
     icon: (
@@ -106,3 +109,5 @@ export const findShapeByKey = (key: string) => {
   });
   return shape?.value || null;
 };
+
+// TODO: Bikash- SVG work with icons

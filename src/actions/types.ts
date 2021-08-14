@@ -2,7 +2,6 @@ import React from "react";
 import { ExcalidrawElement } from "../element/types";
 import { AppState, ExcalidrawProps } from "../types";
 import Library from "../data/library";
-import { ToolButtonSize } from "../components/ToolButton";
 
 /** if false, the action should be prevented */
 export type ActionResult =
@@ -103,17 +102,15 @@ export type ActionName =
   | "exportWithDarkMode"
   | "toggleTheme";
 
-export type PanelComponentProps = {
-  elements: readonly ExcalidrawElement[];
-  appState: AppState;
-  updateData: (formData?: any) => void;
-  appProps: ExcalidrawProps;
-  data?: Partial<{ id: string; size: ToolButtonSize }>;
-};
-
 export interface Action {
   name: ActionName;
-  PanelComponent?: React.FC<PanelComponentProps>;
+  PanelComponent?: React.FC<{
+    elements: readonly ExcalidrawElement[];
+    appState: AppState;
+    updateData: (formData?: any) => void;
+    appProps: ExcalidrawProps;
+    id?: string;
+  }>;
   perform: ActionFn;
   keyPriority?: number;
   keyTest?: (

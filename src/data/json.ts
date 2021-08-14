@@ -4,7 +4,7 @@ import { EXPORT_DATA_TYPES, EXPORT_SOURCE, MIME_TYPES } from "../constants";
 import { clearElementsForExport } from "../element";
 import { ExcalidrawElement } from "../element/types";
 import { AppState } from "../types";
-import { isImageFileHandle, loadFromBlob } from "./blob";
+import { loadFromBlob } from "./blob";
 
 import {
   ExportedDataState,
@@ -15,7 +15,7 @@ import Library from "./library";
 
 export const serializeAsJSON = (
   elements: readonly ExcalidrawElement[],
-  appState: Partial<AppState>,
+  appState: AppState,
 ): string => {
   const data: ExportedDataState = {
     type: EXPORT_DATA_TYPES.excalidraw,
@@ -44,15 +44,12 @@ export const saveAsJSON = async (
       description: "Excalidraw file",
       extensions: [".excalidraw"],
     },
-    isImageFileHandle(appState.fileHandle) ? null : appState.fileHandle,
+    appState.fileHandle,
   );
   return { fileHandle };
 };
 
-export const loadFromJSON = async (
-  localAppState: AppState,
-  localElements: readonly ExcalidrawElement[] | null,
-) => {
+export const loadFromJSON = async (localAppState: AppState) => {
   const blob = await fileOpen({
     description: "Excalidraw files",
     // ToDo: Be over-permissive until https://bugs.webkit.org/show_bug.cgi?id=34442
@@ -67,7 +64,7 @@ export const loadFromJSON = async (
     ],
     */
   });
-  return loadFromBlob(blob, localAppState, localElements);
+  return loadFromBlob(blob, localAppState);
 };
 
 export const isValidExcalidrawData = (data?: {

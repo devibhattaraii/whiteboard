@@ -1,7 +1,7 @@
 import React from "react";
 import { getDefaultAppState } from "../appState";
 import { ColorPicker } from "../components/ColorPicker";
-import { trash, zoomIn, zoomOut } from "../components/icons";
+import { resetZoom, trash, zoomIn, zoomOut } from "../components/icons";
 import { ToolButton } from "../components/ToolButton";
 import { DarkModeToggle } from "../components/DarkModeToggle";
 import { ZOOM_STEP } from "../constants";
@@ -17,7 +17,6 @@ import { getNewZoom } from "../scene/zoom";
 import { AppState, NormalizedZoomValue } from "../types";
 import { getShortcutKey } from "../utils";
 import { register } from "./register";
-import { Tooltip } from "../components/Tooltip";
 
 export const actionChangeViewBackgroundColor = register({
   name: "changeViewBackgroundColor",
@@ -109,7 +108,6 @@ export const actionZoomIn = register({
       onClick={() => {
         updateData(null);
       }}
-      size="small"
     />
   ),
   keyTest: (event) =>
@@ -144,7 +142,6 @@ export const actionZoomOut = register({
       onClick={() => {
         updateData(null);
       }}
-      size="small"
     />
   ),
   keyTest: (event) =>
@@ -171,21 +168,16 @@ export const actionResetZoom = register({
       commitToHistory: false,
     };
   },
-  PanelComponent: ({ updateData, appState }) => (
-    <Tooltip label={t("buttons.resetZoom")}>
-      <ToolButton
-        type="button"
-        className="reset-zoom-button"
-        title={t("buttons.resetZoom")}
-        aria-label={t("buttons.resetZoom")}
-        onClick={() => {
-          updateData(null);
-        }}
-        size="small"
-      >
-        {(appState.zoom.value * 100).toFixed(0)}%
-      </ToolButton>
-    </Tooltip>
+  PanelComponent: ({ updateData }) => (
+    <ToolButton
+      type="button"
+      icon={resetZoom}
+      title={t("buttons.resetZoom")}
+      aria-label={t("buttons.resetZoom")}
+      onClick={() => {
+        updateData(null);
+      }}
+    />
   ),
   keyTest: (event) =>
     (event.code === CODES.ZERO || event.code === CODES.NUM_ZERO) &&

@@ -1,30 +1,11 @@
 import React from "react";
 import { Popover } from "./Popover";
-import { isTransparent } from "../utils";
 
 import "./ColorPicker.scss";
 import { isArrowKey, KEYS } from "../keys";
 import { t, getLanguage } from "../i18n";
 import { isWritableElement } from "../utils";
 import colors from "../colors";
-
-const isValidColor = (color: string) => {
-  const style = new Option().style;
-  style.color = color;
-  return !!style.color;
-};
-
-const getColor = (color: string): string | null => {
-  if (isTransparent(color)) {
-    return color;
-  }
-
-  return isValidColor(color)
-    ? color
-    : isValidColor(`#${color}`)
-    ? `#${color}`
-    : null;
-};
 
 // This is a narrow reimplementation of the awesome react-color Twitter component
 // https://github.com/casesandberg/react-color/blob/master/src/components/twitter/Twitter.js
@@ -57,14 +38,11 @@ const Picker = ({
   const firstItem = React.useRef<HTMLButtonElement>();
   const activeItem = React.useRef<HTMLButtonElement>();
   const gallery = React.useRef<HTMLDivElement>();
-  const colorInput = React.useRef<HTMLInputElement>();
 
   React.useEffect(() => {
     // After the component is first mounted focus on first input
     if (activeItem.current) {
       activeItem.current.focus();
-    } else if (colorInput.current) {
-      colorInput.current.focus();
     } else if (gallery.current) {
       gallery.current.focus();
     }
@@ -75,12 +53,8 @@ const Picker = ({
       const { activeElement } = document;
       if (event.shiftKey) {
         if (activeElement === firstItem.current) {
-          colorInput.current?.focus();
           event.preventDefault();
         }
-      } else if (activeElement === colorInput.current) {
-        firstItem.current?.focus();
-        event.preventDefault();
       }
     } else if (isArrowKey(event.key)) {
       const { activeElement } = document;
@@ -138,106 +112,40 @@ const Picker = ({
         }}
         tabIndex={0}
       >
-        {colors.map((_color, i) => {
-          const _colorWithoutHash = _color.replace("#", "");
-          return (
-            <button
-              className="color-picker-swatch"
-              onClick={(event) => {
-                (event.currentTarget as HTMLButtonElement).focus();
-                onChange(_color);
-              }}
-              title={`${t(`colors.${_colorWithoutHash}`)}${
-                !isTransparent(_color) ? ` (${_color})` : ""
-              } — ${keyBindings[i].toUpperCase()}`}
-              aria-label={t(`colors.${_colorWithoutHash}`)}
-              aria-keyshortcuts={keyBindings[i]}
-              style={{ color: _color }}
-              key={_color}
-              ref={(el) => {
-                if (el && i === 0) {
-                  firstItem.current = el;
-                }
-                if (el && _color === color) {
-                  activeItem.current = el;
-                }
-              }}
-              onFocus={() => {
-                onChange(_color);
-              }}
-            >
-              {isTransparent(_color) ? (
-                <div className="color-picker-transparent"></div>
-              ) : undefined}
-              <span className="color-picker-keybinding">{keyBindings[i]}</span>
-            </button>
-          );
-        })}
-        {showInput && (
-          <ColorInput
-            color={color}
-            label={label}
-            onChange={(color) => {
-              onChange(color);
+        {colors.map((_color, i) => (
+          <button
+            className="color-picker-swatch"
+            onClick={(event) => {
+              (event.currentTarget as HTMLButtonElement).focus();
+              onChange(_color);
             }}
-            ref={colorInput}
-          />
-        )}
+            title={`${_color} — ${keyBindings[i].toUpperCase()}`}
+            aria-label={_color}
+            aria-keyshortcuts={keyBindings[i]}
+            style={{ color: _color }}
+            key={_color}
+            ref={(el) => {
+              if (el && i === 0) {
+                firstItem.current = el;
+              }
+              if (el && _color === color) {
+                activeItem.current = el;
+              }
+            }}
+            onFocus={() => {
+              onChange(_color);
+            }}
+          >
+            {_color === "transparent" ? (
+              <div className="color-picker-transparent"></div>
+            ) : undefined}
+            <span className="color-picker-keybinding">{keyBindings[i]}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 };
-
-const ColorInput = React.forwardRef(
-  (
-    {
-      color,
-      onChange,
-      label,
-    }: {
-      color: string | null;
-      onChange: (color: string) => void;
-      label: string;
-    },
-    ref,
-  ) => {
-    const [innerValue, setInnerValue] = React.useState(color);
-    const inputRef = React.useRef(null);
-
-    React.useEffect(() => {
-      setInnerValue(color);
-    }, [color]);
-
-    React.useImperativeHandle(ref, () => inputRef.current);
-
-    const changeColor = React.useCallback(
-      (inputValue: string) => {
-        const value = inputValue.toLowerCase();
-        const color = getColor(value);
-        if (color) {
-          onChange(color);
-        }
-        setInnerValue(value);
-      },
-      [onChange],
-    );
-
-    return (
-      <label className="color-input-container">
-        <div className="color-picker-hash">#</div>
-        <input
-          spellCheck={false}
-          className="color-picker-input"
-          aria-label={label}
-          onChange={(event) => changeColor(event.target.value)}
-          value={(innerValue || "").replace(/^#/, "")}
-          onBlur={() => setInnerValue(color)}
-          ref={inputRef}
-        />
-      </label>
-    );
-  },
-);
 
 export const ColorPicker = ({
   type,
@@ -265,13 +173,6 @@ export const ColorPicker = ({
           style={color ? { "--swatch-color": color } : undefined}
           onClick={() => setActive(!isActive)}
           ref={pickerButton}
-        />
-        <ColorInput
-          color={color}
-          label={label}
-          onChange={(color) => {
-            onChange(color);
-          }}
         />
       </div>
       <React.Suspense fallback="">

@@ -102,8 +102,8 @@ const generateElementCanvas = (
       padding * zoom.value * 2;
   }
 
-  context.save();
   context.translate(padding * zoom.value, padding * zoom.value);
+
   context.scale(
     window.devicePixelRatio * zoom.value,
     window.devicePixelRatio * zoom.value,
@@ -112,7 +112,12 @@ const generateElementCanvas = (
   const rc = rough.canvas(canvas);
 
   drawElementOnCanvas(element, rc, context);
-  context.restore();
+
+  context.translate(-(padding * zoom.value), -(padding * zoom.value));
+  context.scale(
+    1 / (window.devicePixelRatio * zoom.value),
+    1 / (window.devicePixelRatio * zoom.value),
+  );
   return {
     element,
     canvas,
@@ -170,9 +175,11 @@ const drawElementOnCanvas = (
           document.body.appendChild(context.canvas);
         }
         context.canvas.setAttribute("dir", rtl ? "rtl" : "ltr");
-        context.save();
+        const font = context.font;
         context.font = getFontString(element);
+        const fillStyle = context.fillStyle;
         context.fillStyle = element.strokeColor;
+        const textAlign = context.textAlign;
         context.textAlign = element.textAlign as CanvasTextAlign;
 
         // Canvas does not support multiline text by default
@@ -192,7 +199,9 @@ const drawElementOnCanvas = (
             (index + 1) * lineHeight - verticalOffset,
           );
         }
-        context.restore();
+        context.fillStyle = fillStyle;
+        context.font = font;
+        context.textAlign = textAlign;
         if (shouldTemporarilyAttach) {
           context.canvas.remove();
         }
@@ -509,7 +518,6 @@ const drawElementFromCanvas = (
 
   const cx = ((x1 + x2) / 2 + sceneState.scrollX) * window.devicePixelRatio;
   const cy = ((y1 + y2) / 2 + sceneState.scrollY) * window.devicePixelRatio;
-  context.save();
   context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
   context.translate(cx, cy);
   context.rotate(element.angle);
@@ -523,7 +531,9 @@ const drawElementFromCanvas = (
     elementWithCanvas.canvas!.width / elementWithCanvas.canvasZoom,
     elementWithCanvas.canvas!.height / elementWithCanvas.canvasZoom,
   );
-  context.restore();
+  context.rotate(-element.angle);
+  context.translate(-cx, -cy);
+  context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
   // Clear the nested element we appended to the DOM
 };
@@ -538,14 +548,18 @@ export const renderElement = (
   const generator = rc.generator;
   switch (element.type) {
     case "selection": {
-      context.save();
       context.translate(
         element.x + sceneState.scrollX,
         element.y + sceneState.scrollY,
       );
+      const fillStyle = context.fillStyle;
       context.fillStyle = "rgba(0, 0, 255, 0.10)";
       context.fillRect(0, 0, element.width, element.height);
-      context.restore();
+      context.fillStyle = fillStyle;
+      context.translate(
+        -element.x - sceneState.scrollX,
+        -element.y - sceneState.scrollY,
+      );
       break;
     }
     case "freedraw": {
@@ -563,12 +577,13 @@ export const renderElement = (
         const cy = (y1 + y2) / 2 + sceneState.scrollY;
         const shiftX = (x2 - x1) / 2 - (element.x - x1);
         const shiftY = (y2 - y1) / 2 - (element.y - y1);
-        context.save();
         context.translate(cx, cy);
         context.rotate(element.angle);
         context.translate(-shiftX, -shiftY);
         drawElementOnCanvas(element, rc, context);
-        context.restore();
+        context.translate(shiftX, shiftY);
+        context.rotate(-element.angle);
+        context.translate(-cx, -cy);
       }
 
       break;
@@ -592,12 +607,13 @@ export const renderElement = (
         const cy = (y1 + y2) / 2 + sceneState.scrollY;
         const shiftX = (x2 - x1) / 2 - (element.x - x1);
         const shiftY = (y2 - y1) / 2 - (element.y - y1);
-        context.save();
         context.translate(cx, cy);
         context.rotate(element.angle);
         context.translate(-shiftX, -shiftY);
         drawElementOnCanvas(element, rc, context);
-        context.restore();
+        context.translate(shiftX, shiftY);
+        context.rotate(-element.angle);
+        context.translate(-cx, -cy);
       }
       break;
     }

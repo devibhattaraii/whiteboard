@@ -64,14 +64,14 @@ const strokeRectWithRotation = (
   angle: number,
   fill: boolean = false,
 ) => {
-  context.save();
   context.translate(cx, cy);
   context.rotate(angle);
   if (fill) {
     context.fillRect(x - cx, y - cy, width, height);
   }
   context.strokeRect(x - cx, y - cy, width, height);
-  context.restore();
+  context.rotate(-angle);
+  context.translate(-cx, -cy);
 };
 
 const strokeDiamondWithRotation = (
@@ -82,7 +82,6 @@ const strokeDiamondWithRotation = (
   cy: number,
   angle: number,
 ) => {
-  context.save();
   context.translate(cx, cy);
   context.rotate(angle);
   context.beginPath();
@@ -92,7 +91,8 @@ const strokeDiamondWithRotation = (
   context.lineTo(-width / 2, 0);
   context.closePath();
   context.stroke();
-  context.restore();
+  context.rotate(-angle);
+  context.translate(-cx, -cy);
 };
 
 const strokeEllipseWithRotation = (
@@ -128,7 +128,7 @@ const strokeGrid = (
   width: number,
   height: number,
 ) => {
-  context.save();
+  const origStrokeStyle = context.strokeStyle;
   context.strokeStyle = "rgba(0,0,0,0.1)";
   context.beginPath();
   for (let x = offsetX; x < offsetX + width + gridSize * 2; x += gridSize) {
@@ -140,7 +140,7 @@ const strokeGrid = (
     context.lineTo(offsetX + width + gridSize * 2, y);
   }
   context.stroke();
-  context.restore();
+  context.strokeStyle = origStrokeStyle;
 };
 
 const renderLinearPointHandles = (
@@ -149,8 +149,9 @@ const renderLinearPointHandles = (
   sceneState: SceneState,
   element: NonDeleted<ExcalidrawLinearElement>,
 ) => {
-  context.save();
   context.translate(sceneState.scrollX, sceneState.scrollY);
+  const origStrokeStyle = context.strokeStyle;
+  const lineWidth = context.lineWidth;
   context.lineWidth = 1 / sceneState.zoom.value;
 
   LinearElementEditor.getPointsGlobalCoordinates(element).forEach(
@@ -170,7 +171,10 @@ const renderLinearPointHandles = (
       );
     },
   );
-  context.restore();
+  context.setLineDash([]);
+  context.lineWidth = lineWidth;
+  context.translate(-sceneState.scrollX, -sceneState.scrollY);
+  context.strokeStyle = origStrokeStyle;
 };
 
 export const renderScene = (
@@ -203,8 +207,6 @@ export const renderScene = (
 
   const context = canvas.getContext("2d")!;
 
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.save();
   context.scale(scale, scale);
 
   // When doing calculations based on canvas width we should used normalized one
@@ -225,10 +227,10 @@ export const renderScene = (
     if (hasTransparence) {
       context.clearRect(0, 0, normalizedCanvasWidth, normalizedCanvasHeight);
     }
-    context.save();
+    const fillStyle = context.fillStyle;
     context.fillStyle = sceneState.viewBackgroundColor;
     context.fillRect(0, 0, normalizedCanvasWidth, normalizedCanvasHeight);
-    context.restore();
+    context.fillStyle = fillStyle;
   } else {
     context.clearRect(0, 0, normalizedCanvasWidth, normalizedCanvasHeight);
   }
@@ -236,7 +238,6 @@ export const renderScene = (
   // Apply zoom
   const zoomTranslationX = sceneState.zoom.translation.x;
   const zoomTranslationY = sceneState.zoom.translation.y;
-  context.save();
   context.translate(zoomTranslationX, zoomTranslationY);
   context.scale(sceneState.zoom.value, sceneState.zoom.value);
 
@@ -381,7 +382,6 @@ export const renderScene = (
     const locallySelectedElements = getSelectedElements(elements, appState);
 
     // Paint resize transformHandles
-    context.save();
     context.translate(sceneState.scrollX, sceneState.scrollY);
     if (locallySelectedElements.length === 1) {
       context.fillStyle = oc.white;
@@ -427,11 +427,12 @@ export const renderScene = (
       );
       renderTransformHandles(context, sceneState, transformHandles, 0);
     }
-    context.restore();
+    context.translate(-sceneState.scrollX, -sceneState.scrollY);
   }
 
   // Reset zoom
-  context.restore();
+  context.scale(1 / sceneState.zoom.value, 1 / sceneState.zoom.value);
+  context.translate(-zoomTranslationX, -zoomTranslationY);
 
   // Paint remote pointers
   for (const clientId in sceneState.remotePointerViewportCoords) {
@@ -456,7 +457,9 @@ export const renderScene = (
 
     const { background, stroke } = getClientColors(clientId, appState);
 
-    context.save();
+    const strokeStyle = context.strokeStyle;
+    const fillStyle = context.fillStyle;
+    const globalAlpha = context.globalAlpha;
     context.strokeStyle = stroke;
     context.fillStyle = background;
 
@@ -542,7 +545,9 @@ export const renderScene = (
       );
     }
 
-    context.restore();
+    context.strokeStyle = strokeStyle;
+    context.fillStyle = fillStyle;
+    context.globalAlpha = globalAlpha;
     context.closePath();
   }
 
@@ -556,7 +561,8 @@ export const renderScene = (
       sceneState,
     );
 
-    context.save();
+    const fillStyle = context.fillStyle;
+    const strokeStyle = context.strokeStyle;
     context.fillStyle = SCROLLBAR_COLOR;
     context.strokeStyle = "rgba(255,255,255,0.8)";
     [scrollBars.horizontal, scrollBars.vertical].forEach((scrollBar) => {
@@ -571,10 +577,12 @@ export const renderScene = (
         );
       }
     });
-    context.restore();
+    context.fillStyle = fillStyle;
+    context.strokeStyle = strokeStyle;
   }
 
-  context.restore();
+  context.scale(1 / scale, 1 / scale);
+
   return { atLeastOneVisibleElement: visibleElements.length > 0, scrollBars };
 };
 
@@ -587,7 +595,7 @@ const renderTransformHandles = (
   Object.keys(transformHandles).forEach((key) => {
     const transformHandle = transformHandles[key as TransformHandleType];
     if (transformHandle !== undefined) {
-      context.save();
+      const lineWidth = context.lineWidth;
       context.lineWidth = 1 / sceneState.zoom.value;
       if (key === "rotation") {
         fillCircle(
@@ -609,7 +617,7 @@ const renderTransformHandles = (
           true, // fill before stroke
         );
       }
-      context.restore();
+      context.lineWidth = lineWidth;
     }
   });
 };
@@ -637,13 +645,18 @@ const renderSelectionBorder = (
   const elementWidth = elementX2 - elementX1;
   const elementHeight = elementY2 - elementY1;
 
+  const initialLineDash = context.getLineDash();
+  const lineWidth = context.lineWidth;
+  const lineDashOffset = context.lineDashOffset;
+  const strokeStyle = context.strokeStyle;
+
   const dashedLinePadding = 4 / sceneState.zoom.value;
   const dashWidth = 8 / sceneState.zoom.value;
   const spaceWidth = 4 / sceneState.zoom.value;
 
-  context.save();
-  context.translate(sceneState.scrollX, sceneState.scrollY);
   context.lineWidth = 1 / sceneState.zoom.value;
+
+  context.translate(sceneState.scrollX, sceneState.scrollY);
 
   const count = selectionColors.length;
   for (let index = 0; index < count; ++index) {
@@ -664,7 +677,11 @@ const renderSelectionBorder = (
       angle,
     );
   }
-  context.restore();
+  context.lineDashOffset = lineDashOffset;
+  context.strokeStyle = strokeStyle;
+  context.lineWidth = lineWidth;
+  context.setLineDash(initialLineDash);
+  context.translate(-sceneState.scrollX, -sceneState.scrollY);
 };
 
 const renderBindingHighlight = (
@@ -672,15 +689,21 @@ const renderBindingHighlight = (
   sceneState: SceneState,
   suggestedBinding: SuggestedBinding,
 ) => {
+  // preserve context settings to restore later
+  const originalStrokeStyle = context.strokeStyle;
+  const originalLineWidth = context.lineWidth;
+
   const renderHighlight = Array.isArray(suggestedBinding)
     ? renderBindingHighlightForSuggestedPointBinding
     : renderBindingHighlightForBindableElement;
 
-  context.save();
   context.translate(sceneState.scrollX, sceneState.scrollY);
   renderHighlight(context, suggestedBinding as any);
 
-  context.restore();
+  // restore context settings
+  context.strokeStyle = originalStrokeStyle;
+  context.lineWidth = originalLineWidth;
+  context.translate(-sceneState.scrollX, -sceneState.scrollY);
 };
 
 const renderBindingHighlightForBindableElement = (

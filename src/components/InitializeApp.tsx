@@ -1,11 +1,8 @@
 import React from "react";
 
 import { LoadingMessage } from "./LoadingMessage";
-import { defaultLang, Language, languages, setLanguage } from "../i18n";
 
-interface Props {
-  langCode: Language["code"];
-}
+interface Props {}
 interface State {
   isLoading: boolean;
 }
@@ -15,10 +12,6 @@ export class InitializeApp extends React.Component<Props, State> {
   };
 
   async componentDidMount() {
-    const currentLang =
-      languages.find((lang) => lang.code === this.props.langCode) ||
-      defaultLang;
-    await setLanguage(currentLang);
     this.setState({
       isLoading: false,
     });

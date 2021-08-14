@@ -14,7 +14,6 @@ export const CURSOR_TYPE = {
   TEXT: "text",
   CROSSHAIR: "crosshair",
   GRABBING: "grabbing",
-  GRAB: "grab",
   POINTER: "pointer",
   MOVE: "move",
   AUTO: "",
@@ -72,7 +71,7 @@ export const FONT_FAMILY = {
 export const WINDOWS_EMOJI_FALLBACK_FONT = "Segoe UI Emoji";
 
 export const DEFAULT_FONT_SIZE = 20;
-export const DEFAULT_FONT_FAMILY: FontFamilyValues = FONT_FAMILY.Virgil;
+export const DEFAULT_FONT_FAMILY: FontFamilyValues = FONT_FAMILY.Helvetica;
 export const DEFAULT_TEXT_ALIGN = "left";
 export const DEFAULT_VERTICAL_ALIGN = "top";
 export const DEFAULT_VERSION = "{version}";

@@ -8,7 +8,6 @@ import "../../css/app.scss";
 import "../../css/styles.scss";
 
 import { AppProps, ExcalidrawAPIRefValue, ExcalidrawProps } from "../../types";
-import { defaultLang } from "../../i18n";
 import { DEFAULT_UI_OPTIONS } from "../../constants";
 
 const Excalidraw = (props: ExcalidrawProps) => {
@@ -21,7 +20,6 @@ const Excalidraw = (props: ExcalidrawProps) => {
     onPointerUpdate,
     renderTopRightUI,
     renderFooter,
-    langCode = defaultLang.code,
     viewModeEnabled,
     zenModeEnabled,
     gridModeEnabled,
@@ -70,7 +68,7 @@ const Excalidraw = (props: ExcalidrawProps) => {
   }, []);
 
   return (
-    <InitializeApp langCode={langCode}>
+    <InitializeApp>
       <App
         onChange={onChange}
         initialData={initialData}
@@ -80,7 +78,6 @@ const Excalidraw = (props: ExcalidrawProps) => {
         onPointerUpdate={onPointerUpdate}
         renderTopRightUI={renderTopRightUI}
         renderFooter={renderFooter}
-        langCode={langCode}
         viewModeEnabled={viewModeEnabled}
         zenModeEnabled={zenModeEnabled}
         gridModeEnabled={gridModeEnabled}

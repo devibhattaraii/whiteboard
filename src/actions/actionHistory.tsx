@@ -69,13 +69,12 @@ export const createUndoAction: ActionCreator = (history) => ({
     event[KEYS.CTRL_OR_CMD] &&
     event.key.toLowerCase() === KEYS.Z &&
     !event.shiftKey,
-  PanelComponent: ({ updateData, data }) => (
+  PanelComponent: ({ updateData }) => (
     <ToolButton
       type="button"
       icon={undo}
       aria-label={t("buttons.undo")}
       onClick={updateData}
-      size={data?.size || "medium"}
     />
   ),
   commitToHistory: () => false,
@@ -90,13 +89,12 @@ export const createRedoAction: ActionCreator = (history) => ({
       event.shiftKey &&
       event.key.toLowerCase() === KEYS.Z) ||
     (isWindows && event.ctrlKey && !event.shiftKey && event.key === KEYS.Y),
-  PanelComponent: ({ updateData, data }) => (
+  PanelComponent: ({ updateData }) => (
     <ToolButton
       type="button"
       icon={redo}
       aria-label={t("buttons.redo")}
       onClick={updateData}
-      size={data?.size || "medium"}
     />
   ),
   commitToHistory: () => false,

@@ -137,7 +137,7 @@ import {
   selectGroupsForSelectedElements,
 } from "../groups";
 import History from "../history";
-import { defaultLang, getLanguage, languages, setLanguage, t } from "../i18n";
+import { t } from "../i18n";
 import {
   CODES,
   getResizeCenterPointKey,
@@ -156,7 +156,6 @@ import {
   getElementsWithinSelection,
   getNormalizedZoom,
   getSelectedElements,
-  hasBackground,
   isOverScrollBars,
   isSomeElementSelected,
 } from "../scene";
@@ -343,7 +342,7 @@ class App extends React.Component<AppProps, AppState> {
           style={{
             width: canvasDOMWidth,
             height: canvasDOMHeight,
-            cursor: CURSOR_TYPE.GRAB,
+            cursor: "grabbing",
           }}
           width={canvasWidth}
           height={canvasHeight}
@@ -425,7 +424,6 @@ class App extends React.Component<AppProps, AppState> {
               }
               zenModeEnabled={zenModeEnabled}
               toggleZenMode={this.toggleZenMode}
-              langCode={getLanguage().code}
               isCollaborating={this.props.isCollaborating || false}
               renderTopRightUI={renderTopRightUI}
               renderCustomFooter={renderFooter}
@@ -655,11 +653,7 @@ class App extends React.Component<AppProps, AppState> {
           const fileHandle = launchParams.files[0];
           const blob: Blob = await fileHandle.getFile();
           blob.handle = fileHandle;
-          loadFromBlob(
-            blob,
-            this.state,
-            this.scene.getElementsIncludingDeleted(),
-          )
+          loadFromBlob(blob, this.state)
             .then(({ elements, appState }) =>
               this.syncActionResult({
                 elements,
@@ -697,7 +691,7 @@ class App extends React.Component<AppProps, AppState> {
       };
     }
 
-    const scene = restore(initialData, null, null);
+    const scene = restore(initialData, null);
     scene.appState = {
       ...scene.appState,
       isLoading: false,
@@ -922,10 +916,6 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   componentDidUpdate(prevProps: AppProps, prevState: AppState) {
-    if (prevProps.langCode !== this.props.langCode) {
-      this.updateLanguage();
-    }
-
     if (prevProps.viewModeEnabled !== this.props.viewModeEnabled) {
       this.setState({ viewModeEnabled: !!this.props.viewModeEnabled });
     }
@@ -1206,7 +1196,7 @@ class App extends React.Component<AppProps, AppState> {
         });
       } else if (data.elements) {
         this.addElementsFromPasteOrLibrary({
-          elements: data.elements,
+          elements: restoreElements(data.elements),
           position: "cursor",
         });
       } else if (data.text) {
@@ -1221,7 +1211,7 @@ class App extends React.Component<AppProps, AppState> {
     elements: readonly ExcalidrawElement[];
     position: { clientX: number; clientY: number } | "cursor" | "center";
   }) => {
-    const elements = restoreElements(opts.elements, null);
+    const elements = restoreElements(opts.elements);
     const [minX, minY, maxX, maxY] = getCommonBounds(elements);
 
     const elementsCenterX = distance(minX, maxX) / 2;
@@ -1591,22 +1581,13 @@ class App extends React.Component<AppProps, AppState> {
           this.scene.getElements(),
           this.state,
         );
-        if (
-          this.state.elementType === "selection" &&
-          !selectedElements.length
-        ) {
-          return;
-        }
-
-        if (
-          event.key === KEYS.G &&
-          (hasBackground(this.state.elementType) ||
-            selectedElements.some((element) => hasBackground(element.type)))
-        ) {
-          this.setState({ openPopup: "backgroundColorPicker" });
-        }
-        if (event.key === KEYS.S) {
-          this.setState({ openPopup: "strokeColorPicker" });
+        if (selectedElements.length) {
+          if (event.key === KEYS.G) {
+            this.setState({ openPopup: "backgroundColorPicker" });
+          }
+          if (event.key === KEYS.S) {
+            this.setState({ openPopup: "strokeColorPicker" });
+          }
         }
       }
     },
@@ -1614,9 +1595,7 @@ class App extends React.Component<AppProps, AppState> {
 
   private onKeyUp = withBatchedUpdates((event: KeyboardEvent) => {
     if (event.key === KEYS.SPACE) {
-      if (this.state.viewModeEnabled) {
-        setCursor(this.canvas, CURSOR_TYPE.GRAB);
-      } else if (this.state.elementType === "selection") {
+      if (this.state.elementType === "selection") {
         resetCursor(this.canvas);
       } else {
         setCursorForShape(this.canvas, this.state.elementType);
@@ -2241,8 +2220,6 @@ class App extends React.Component<AppProps, AppState> {
         this.canvas,
         isTextElement(hitElement) ? CURSOR_TYPE.TEXT : CURSOR_TYPE.CROSSHAIR,
       );
-    } else if (this.state.viewModeEnabled) {
-      setCursor(this.canvas, CURSOR_TYPE.GRAB);
     } else if (isOverScrollBar) {
       setCursor(this.canvas, CURSOR_TYPE.AUTO);
     } else if (
@@ -2480,11 +2457,7 @@ class App extends React.Component<AppProps, AppState> {
         lastPointerUp = null;
         isPanning = false;
         if (!isHoldingSpace) {
-          if (this.state.viewModeEnabled) {
-            setCursor(this.canvas, CURSOR_TYPE.GRAB);
-          } else {
-            setCursorForShape(this.canvas, this.state.elementType);
-          }
+          setCursorForShape(this.canvas, this.state.elementType);
         }
         this.setState({
           cursorButton: "up",
@@ -3827,22 +3800,7 @@ class App extends React.Component<AppProps, AppState> {
     try {
       const file = event.dataTransfer.files[0];
       if (file?.type === "image/png" || file?.type === "image/svg+xml") {
-        if (fsSupported) {
-          try {
-            // This will only work as of Chrome 86,
-            // but can be safely ignored on older releases.
-            const item = event.dataTransfer.items[0];
-            (file as any).handle = await (item as any).getAsFileSystemHandle();
-          } catch (error) {
-            console.warn(error.name, error.message);
-          }
-        }
-
-        const { elements, appState } = await loadFromBlob(
-          file,
-          this.state,
-          this.scene.getElementsIncludingDeleted(),
-        );
+        const { elements, appState } = await loadFromBlob(file, this.state);
         this.syncActionResult({
           elements,
           appState: {
@@ -3902,7 +3860,7 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   loadFileToCanvas = (file: Blob) => {
-    loadFromBlob(file, this.state, this.scene.getElementsIncludingDeleted())
+    loadFromBlob(file, this.state)
       .then(({ elements, appState }) =>
         this.syncActionResult({
           elements,
@@ -4387,14 +4345,6 @@ class App extends React.Component<AppProps, AppState> {
       offsetLeft: 0,
       offsetTop: 0,
     };
-  }
-
-  private async updateLanguage() {
-    const currentLang =
-      languages.find((lang) => lang.code === this.props.langCode) ||
-      defaultLang;
-    await setLanguage(currentLang);
-    this.setAppState({});
   }
 }
 

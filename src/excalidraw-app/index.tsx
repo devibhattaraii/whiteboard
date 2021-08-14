@@ -1,4 +1,3 @@
-import LanguageDetector from "i18next-browser-languagedetector";
 import React, {
   useCallback,
   useContext,
@@ -25,11 +24,8 @@ import {
   NonDeletedExcalidrawElement,
 } from "../element/types";
 import { useCallbackRefState } from "../hooks/useCallbackRefState";
-import { Language, t } from "../i18n";
-import Excalidraw, {
-  defaultLang,
-  languages,
-} from "../packages/excalidraw/index";
+import { t } from "../i18n";
+import Excalidraw from "../packages/excalidraw/index";
 import { AppState, LibraryItems, ExcalidrawImperativeAPI } from "../types";
 import {
   debounce,
@@ -43,7 +39,6 @@ import CollabWrapper, {
   CollabContext,
   CollabContextConsumer,
 } from "./collab/CollabWrapper";
-import { LanguageList } from "./components/LanguageList";
 import { exportToBackend, getCollaborationLinkData, loadScene } from "./data";
 import {
   importFromLocalStorage,
@@ -56,15 +51,6 @@ import { shield } from "../components/icons";
 
 import "./index.scss";
 import { ExportToExcalidrawPlus } from "./components/ExportToExcalidrawPlus";
-
-const languageDetector = new LanguageDetector();
-languageDetector.init({
-  languageUtils: {
-    formatLanguageCode: (langCode: Language["code"]) => langCode,
-    isWhitelisted: () => true,
-  },
-  checkWhitelist: false,
-});
 
 const saveDebounced = debounce(
   (elements: readonly ExcalidrawElement[], state: AppState) => {
@@ -141,7 +127,7 @@ const initializeScene = async (opts: {
     const url = externalUrlMatch[1];
     try {
       const request = await fetch(window.decodeURIComponent(url));
-      const data = await loadFromBlob(await request.blob(), null, null);
+      const data = await loadFromBlob(await request.blob(), null);
       if (
         !scene.elements.length ||
         window.confirm(t("alerts.loadSceneOverridePrompt"))
@@ -165,24 +151,11 @@ const initializeScene = async (opts: {
   return null;
 };
 
-const PlusLinkJSX = (
-  <p style={{ direction: "ltr", unicodeBidi: "embed" }}>
-    Introducing Excalidraw+
-    <br />
-    <a
-      href="https://plus.excalidraw.com/?utm_source=excalidraw&utm_medium=banner&utm_campaign=launch"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Try out now!
-    </a>
-  </p>
-);
+// const PlusLinkJSX = (
+// );
 
 const ExcalidrawWrapper = () => {
   const [errorMessage, setErrorMessage] = useState("");
-  const currentLangCode = languageDetector.detect() || defaultLang.code;
-  const [langCode, setLangCode] = useState(currentLangCode);
 
   // initial state
   // ---------------------------------------------------------------------------
@@ -267,10 +240,6 @@ const ExcalidrawWrapper = () => {
     };
   }, [collabAPI, excalidrawAPI]);
 
-  useEffect(() => {
-    languageDetector.cacheUserLanguage(langCode);
-  }, [langCode]);
-
   const onChange = (
     elements: readonly ExcalidrawElement[],
     appState: AppState,
@@ -323,77 +292,44 @@ const ExcalidrawWrapper = () => {
         >
           {/* <GitHubCorner theme={appState.theme} dir={document.dir} /> */}
           {/* FIXME remove after 2021-05-20 */}
-          {PlusLinkJSX}
         </div>
       );
     },
     [],
   );
 
-  const renderFooter = useCallback(
-    (isMobile: boolean) => {
-      const renderEncryptedIcon = () => (
-        <a
-          className="encrypted-icon tooltip"
-          href="https://blog.excalidraw.com/end-to-end-encryption/"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={t("encrypted.link")}
+  const renderFooter = useCallback((isMobile: boolean) => {
+    if (isMobile) {
+      const isTinyDevice = window.innerWidth < 362;
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: isTinyDevice ? "column" : "row",
+          }}
         >
-          <Tooltip label={t("encrypted.tooltip")} long={true}>
-            {shield}
-          </Tooltip>
-        </a>
-      );
-
-      const renderLanguageList = () => (
-        <LanguageList
-          onChange={(langCode) => setLangCode(langCode)}
-          languages={languages}
-          currentLangCode={langCode}
-        />
-      );
-      if (isMobile) {
-        const isTinyDevice = window.innerWidth < 362;
-        return (
+          <fieldset>
+            <legend>{t("labels.language")}</legend>
+          </fieldset>
+          {/* FIXME remove after 2021-05-20 */}
           <div
             style={{
-              display: "flex",
-              flexDirection: isTinyDevice ? "column" : "row",
+              width: "24ch",
+              fontSize: "0.7em",
+              textAlign: "center",
+              marginTop: isTinyDevice ? 16 : undefined,
+              marginLeft: "auto",
+              marginRight: isTinyDevice ? "auto" : undefined,
+              padding: "4px 2px",
+              border: "1px dashed #aaa",
+              borderRadius: 12,
             }}
-          >
-            <fieldset>
-              <legend>{t("labels.language")}</legend>
-              {renderLanguageList()}
-            </fieldset>
-            {/* FIXME remove after 2021-05-20 */}
-            <div
-              style={{
-                width: "24ch",
-                fontSize: "0.7em",
-                textAlign: "center",
-                marginTop: isTinyDevice ? 16 : undefined,
-                marginLeft: "auto",
-                marginRight: isTinyDevice ? "auto" : undefined,
-                padding: "4px 2px",
-                border: "1px dashed #aaa",
-                borderRadius: 12,
-              }}
-            >
-              {PlusLinkJSX}
-            </div>
-          </div>
-        );
-      }
-      return (
-        <>
-          {renderEncryptedIcon()}
-          {renderLanguageList()}
-        </>
+          ></div>
+        </div>
       );
-    },
-    [langCode],
-  );
+    }
+    return <>{}</>;
+  }, []);
 
   const renderCustomStats = () => {
     return (
@@ -445,7 +381,6 @@ const ExcalidrawWrapper = () => {
         }}
         renderTopRightUI={renderTopRightUI}
         renderFooter={renderFooter}
-        langCode={langCode}
         renderCustomStats={renderCustomStats}
         detectScroll={false}
         handleKeyboardGlobally={true}

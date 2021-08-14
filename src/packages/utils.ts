@@ -25,7 +25,6 @@ export const exportToCanvas = ({
   const { elements: restoredElements, appState: restoredAppState } = restore(
     { elements, appState },
     null,
-    null,
   );
   const { exportBackground, viewBackgroundColor } = restoredAppState;
   return _exportToCanvas(
@@ -75,21 +74,23 @@ export const exportToBlob = (
   });
 };
 
-export const exportToSvg = async ({
+export const exportToSvg = ({
   elements,
   appState = getDefaultAppState(),
   exportPadding,
+  metadata,
 }: Omit<ExportOpts, "getDimensions"> & {
   exportPadding?: number;
-}): Promise<SVGSVGElement> => {
+  metadata?: string;
+}): SVGSVGElement => {
   const { elements: restoredElements, appState: restoredAppState } = restore(
     { elements, appState },
-    null,
     null,
   );
   return _exportToSvg(getNonDeletedElements(restoredElements), {
     ...restoredAppState,
     exportPadding,
+    metadata,
   });
 };
 

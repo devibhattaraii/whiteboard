@@ -6,7 +6,7 @@
   --button-destructive-bg-color: #{$oc-red-1};
   --button-destructive-color: #{$oc-red-9};
   --button-gray-1: #{$oc-gray-2};
-  --button-gray-2: #{$oc-gray-4};
+  --button-gray-2: #{$oc-blue-4};
   --button-gray-3: #{$oc-gray-5};
   --button-special-active-bg-color: #{$oc-green-0};
   --dialog-border-color: #{$oc-gray-6};
@@ -48,8 +48,12 @@
     --theme-filter: #{$theme-filter};
     --button-destructive-bg-color: #5a0000;
     --button-destructive-color: #{$oc-red-3};
-    --button-gray-1: #363636;
-    --button-gray-2: #272727;
+    --button-gray-1: #363636; // Normal state BG
+    --button-gray-2: rgb(
+      21,
+      138,
+      11
+    ); // Active component Blue:  rgb(26, 179, 240)
     --button-gray-3: #222;
     --button-special-active-bg-color: #204624;
     --dialog-border-color: #{$oc-gray-9};

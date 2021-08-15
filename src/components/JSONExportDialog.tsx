@@ -36,26 +36,6 @@ const JSONExportModal = ({
   return (
     <div className="ExportDialog ExportDialog--json">
       <div className="ExportDialog-cards">
-        {exportOpts.saveFileToDisk && (
-          <Card color="lime">
-            <div className="Card-icon">{exportToFileIcon}</div>
-            <h2>{t("exportDialog.disk_title")}</h2>
-            <div className="Card-details">
-              {t("exportDialog.disk_details")}
-              {!fsSupported && actionManager.renderAction("changeProjectName")}
-            </div>
-            <ToolButton
-              className="Card-button"
-              type="button"
-              title={t("exportDialog.disk_button")}
-              aria-label={t("exportDialog.disk_button")}
-              showAriaLabel={true}
-              onClick={() => {
-                actionManager.executeAction(actionSaveFileToDisk);
-              }}
-            />
-          </Card>
-        )}
         {onExportToBackend && (
           <Card color="pink">
             <div className="Card-icon">{link}</div>

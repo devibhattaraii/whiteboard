@@ -1,5 +1,5 @@
-@import "open-color/open-color.scss";
-@import "../css/variables.module";
+// @import "open-color/open-color.scss";
+// @import "../css/variables.module";
 
 .excalidraw {
   .ToolIcon {
@@ -15,7 +15,7 @@
     background-color: var(--button-gray-1);
 
     &:hover {
-      background-color: rgb(26, 179, 240);
+      background-color: var(--button-gray-2);
     }
     &:active {
       background-color: var(--button-gray-3);

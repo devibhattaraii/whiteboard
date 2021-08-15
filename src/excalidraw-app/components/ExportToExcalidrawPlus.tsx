@@ -1,4 +1,4 @@
-import { getImportedKey, createIV, generateEncryptionKey } from "../data";
+import { getImportedKey, createIV } from "../data";
 
 const encryptData = async (
   key: string,

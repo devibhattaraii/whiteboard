@@ -388,3 +388,7 @@ const ExcalidrawApp = () => {
 };
 
 export default ExcalidrawApp;
+
+// TODO: Eraser
+// TODO: UI fixings
+// TODO: Image pasting

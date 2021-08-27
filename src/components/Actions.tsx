@@ -202,12 +202,12 @@ export const ZoomActions = ({
   renderAction: ActionManager["renderAction"];
   zoom: Zoom;
 }) => (
-  <Stack.Col gap={1}>
-    <Stack.Row gap={1} align="center">
+  <Stack.Row gap={1}>
+    <Stack.Col gap={1} align="center">
       {renderAction("zoomIn")}
       {renderAction("zoomOut")}
       {renderAction("resetZoom")}
       <div style={{ marginInlineStart: 4 }}></div>
-    </Stack.Row>
-  </Stack.Col>
+    </Stack.Col>
+  </Stack.Row>
 );

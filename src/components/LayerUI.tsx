@@ -461,22 +461,32 @@ const LayerUI = ({
         "transition-left": zenModeEnabled,
       })}
     >
-      {/* the zIndex ensures this menu has higher stacking order,
-         see https://github.com/excalidraw/excalidraw/pull/1445 */}
-      <Island padding={2} style={{ zIndex: 1 }}>
-        <Stack.Col gap={4}>
-          <Stack.Row gap={1} justifyContent="space-between">
+      <Island padding={1} style={{ zIndex: 1 }}>
+        <Stack.Col gap={1}>
+          <Stack.Row gap={1.2} justifyContent="space-between">
             <BackgroundPickerAndDarkModeToggle
               actionManager={actionManager}
               appState={appState}
               setAppState={setAppState}
               showThemeBtn={showThemeBtn}
             />
-            <Separator />
-            {actionManager.renderAction("loadScene")}
+          </Stack.Row>
+          {actionManager.renderAction("loadScene")}
+        </Stack.Col>
+      </Island>
+
+      <Island padding={1} style={{ zIndex: 1 }}>
+        <Stack.Col gap={2}>
+          <Stack.Row gap={1.2} justifyContent="space-between">
             {renderJSONExportDialog()}
             {renderImageExportDialog()}
-            <Separator />
+          </Stack.Row>
+        </Stack.Col>
+      </Island>
+
+      <Island padding={1} style={{ zIndex: 1 }}>
+        <Stack.Col gap={2}>
+          <Stack.Row gap={1.2} justifyContent="space-between">
             {onCollabButtonClick && (
               <CollabButton
                 isCollaborating={isCollaborating}
@@ -492,6 +502,9 @@ const LayerUI = ({
           )}
         </Stack.Col>
       </Island>
+
+      {/* the zIndex ensures this menu has higher stacking order,
+         see https://github.com/excalidraw/excalidraw/pull/1445 */}
     </Section>
   );
 

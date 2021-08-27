@@ -5,13 +5,11 @@ import { t } from "../i18n";
 import { useIsMobile } from "./App";
 import { AppState, ExportOpts } from "../types";
 import { Dialog } from "./Dialog";
-import { exportFile, exportToFileIcon, link } from "./icons";
 import { ToolButton } from "./ToolButton";
-import { actionSaveFileToDisk } from "../actions/actionExport";
 import { Card } from "./Card";
 
 import "./ExportDialog.scss";
-import { supported as fsSupported } from "browser-fs-access";
+import { exportFile, link } from "./icons";
 
 export type ExportCB = (
   elements: readonly NonDeletedExcalidrawElement[],

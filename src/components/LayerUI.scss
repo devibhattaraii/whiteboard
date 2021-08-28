@@ -48,8 +48,11 @@
       width: 100%;
 
       &-right {
+        margin-top: auto;
         z-index: 100;
         display: flex;
+        padding: 2px;
+        margin-left: 3px;
       }
     }
 

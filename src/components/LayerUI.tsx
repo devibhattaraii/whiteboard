@@ -648,6 +648,14 @@ const LayerUI = ({
         role="contentinfo"
         className="layer-ui__wrapper__footer App-menu App-menu_bottom"
       >
+        <button
+          className={clsx("disable-zen-mode", {
+            "disable-zen-mode--visible": showExitZenModeBtn,
+          })}
+          onClick={toggleZenMode}
+        >
+          {t("buttons.exitZenMode")}
+        </button>
         <div
           className={clsx(
             "layer-ui__wrapper__footer-left zen-mode-transition",
@@ -659,6 +667,16 @@ const LayerUI = ({
           <Stack.Col gap={2}>
             <Section heading="canvasActions">
               <Island padding={1}>
+                <div
+                  className={clsx(
+                    "layer-ui__wrapper__footer-right zen-mode-transition",
+                    {
+                      "transition-right disable-pointerEvents": zenModeEnabled,
+                    },
+                  )}
+                >
+                  {actionManager.renderAction("toggleShortcuts")}
+                </div>
                 <ZoomActions
                   renderAction={actionManager.renderAction}
                   zoom={appState.zoom}
@@ -667,34 +685,6 @@ const LayerUI = ({
             </Section>
           </Stack.Col>
         </div>
-        <div
-          className={clsx(
-            "layer-ui__wrapper__footer-center zen-mode-transition",
-            {
-              "layer-ui__wrapper__footer-left--transition-bottom": zenModeEnabled,
-            },
-          )}
-        >
-          {renderCustomFooter?.(false, appState)}
-        </div>
-        <div
-          className={clsx(
-            "layer-ui__wrapper__footer-right zen-mode-transition",
-            {
-              "transition-right disable-pointerEvents": zenModeEnabled,
-            },
-          )}
-        >
-          {actionManager.renderAction("toggleShortcuts")}
-        </div>
-        <button
-          className={clsx("disable-zen-mode", {
-            "disable-zen-mode--visible": showExitZenModeBtn,
-          })}
-          onClick={toggleZenMode}
-        >
-          {t("buttons.exitZenMode")}
-        </button>
       </footer>
     );
   };

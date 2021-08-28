@@ -365,6 +365,9 @@
 
   .App-menu_bottom > *:last-child {
     justify-self: flex-end;
+    top: -85vh;
+    position: relative;
+    left: 97.5vw;
   }
 
   .App-menu_left {

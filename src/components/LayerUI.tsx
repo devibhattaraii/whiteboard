@@ -429,10 +429,6 @@ const LayerUI = ({
     );
   };
 
-  const Separator = () => {
-    return <div style={{ width: ".625em" }} />;
-  };
-
   const renderViewModeCanvasActions = () => {
     return (
       <Section

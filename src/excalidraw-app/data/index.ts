@@ -308,6 +308,9 @@ export const exportToBackend = async (
   try {
     const response = await fetch(BACKEND_V2_POST, {
       method: "POST",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: payload,
     });
     const json = await response.json();

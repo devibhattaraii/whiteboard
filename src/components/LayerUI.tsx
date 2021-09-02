@@ -467,15 +467,10 @@ const LayerUI = ({
               showThemeBtn={showThemeBtn}
             />
           </Stack.Row>
-          {actionManager.renderAction("loadScene")}
-        </Stack.Col>
-      </Island>
-
-      <Island padding={1} style={{ zIndex: 1 }}>
-        <Stack.Col gap={2}>
           <Stack.Row gap={1.2} justifyContent="space-between">
-            {renderJSONExportDialog()}
             {renderImageExportDialog()}
+
+            {actionManager.renderAction("loadScene")}
           </Stack.Row>
         </Stack.Col>
       </Island>
@@ -483,6 +478,7 @@ const LayerUI = ({
       <Island padding={1} style={{ zIndex: 1 }}>
         <Stack.Col gap={2}>
           <Stack.Row gap={1.2} justifyContent="space-between">
+            {actionManager.renderAction("clearCanvas")}
             {onCollabButtonClick && (
               <CollabButton
                 isCollaborating={isCollaborating}
@@ -490,7 +486,6 @@ const LayerUI = ({
                 onClick={onCollabButtonClick}
               />
             )}
-            {actionManager.renderAction("clearCanvas")}
           </Stack.Row>
 
           {appState.fileHandle && (
